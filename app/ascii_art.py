@@ -29,8 +29,19 @@ def image_to_pixels(image):
     return pixel_matrix
 
 def pixel_matrix(image):
+    '''Returns a flattened array of pixel data.'''
     print(list(image.getdata()))
-            
+
+# 3. Create brightness matrix
+def average_brightness(pixel):
+    return (pixel[0] + pixel[1] + pixel[2] / 3)
+
+def lightness(pixel):
+    return (max(pixel[0] + pixel[1] + pixel[2]) + min(pixel[0] + pixel[1] + pixel[2])) / 2
+
+def luminosity(pixel):
+    return (0.21 * pixel[0]) + (0.72 * pixel[1]) + (0.07 * pixel[2])
+          
 
 
 if __name__ == "__main__":
@@ -44,6 +55,6 @@ if __name__ == "__main__":
 
     image = load_image(jpg_image)
     image_info(image)
-    #image_to_pixels(image)
-    pixel_matrix(image)
+    image_to_pixels(image)
+    
     
