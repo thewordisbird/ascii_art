@@ -3,12 +3,14 @@ from PIL import Image
 
 # 1. Read image and print image size
 def load_image(jpg_file):
-    im = Image.open(jpg_file)
-    if im:
-        print('Sucessfully loaded image!')
-        return im
-    else:
-        print('Unable to load image.')
+    if jpg_file:
+        im = Image.open(jpg_file)
+        if im:
+            print('Sucessfully loaded image!')
+            return im
+        else:
+            print('Unable to load image.')
+    return None 
 
 def image_info(image):
     print(f'Image size: {image.size[0]} x {image.size[1]}')
@@ -18,6 +20,7 @@ def image_to_pixels(image):
     pixel_matrix = []
     pixel_matrix_width = image.size[0]
     pixel_matrix_height = image.size[1]
+    print(pixel_matrix_height, pixel_matrix_width)
     
     pixels = image.load()
     for i in range(pixel_matrix_width):
