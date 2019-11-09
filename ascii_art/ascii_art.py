@@ -20,7 +20,6 @@ def image_to_pixels(image):
     pixel_matrix = []
     pixel_matrix_width = image.size[0]
     pixel_matrix_height = image.size[1]
-    print(pixel_matrix_height, pixel_matrix_width)
     
     pixels = image.load()
     for i in range(pixel_matrix_width):
