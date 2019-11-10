@@ -11,19 +11,22 @@ from ascii_art import ascii_art as a
 @pytest.fixture(scope='function')
 def test_image():
     test_pixel_matrix = [
-        [(254, 0, 0), (254, 0, 0), (254, 0, 0), (254, 0, 0)],
-        [(254, 0, 0), (254, 0, 0), (254, 0, 0), (254, 0, 0)],
-        [(254, 0, 0), (254, 0, 0), (254, 0, 0), (254, 0, 0)],
-        [(0, 254, 0), (0, 254, 0), (0, 254, 0), (0, 254, 0)],
-        [(254, 0, 0), (254, 0, 0), (254, 0, 0), (254, 0, 0)],
-        [(254, 0, 0), (254, 0, 0), (254, 0, 0), (254, 0, 0)]
-    ]
-    im = Image.new('RGB', (6, 4))
+                            [(254, 0, 0), (0, 254, 0), (0, 0, 254)],
+                            [(254, 0, 0), (0, 254, 0), (0, 0, 254)],
+                            [(254, 0, 0), (0, 254, 0), (0, 0, 254)]
+                        ]
+    im = Image.new('RGB', (3, 3))
     px = im.load()
     for i in range(im.size[0]):
         for j in range(im.size[1]):
-            print(test_pixel_matrix[i][j])
+            print(f'Before: {i,j} | {px[i,j]}')
             px[i,j] = test_pixel_matrix[i][j]
+            print(f'After: {i,j} | {px[i,j]}')
+
+    for i in range(im.size[0]):
+        for j in range(im.size[1]):
+            print(f'Pixel at: {i,j} | {px[i,j]}')
+            
     # save test image in test file while testing
     test_image_path = os.path.join(os.path.dirname(os.path.join(os.path.abspath(__file__))), 'test_img.jpg')
     print(test_image_path)
