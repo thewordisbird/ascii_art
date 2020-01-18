@@ -1,22 +1,27 @@
 import os
+import csv
 from PIL import Image
 
 # 1. Read image and print image size
-def load_image(jpg_file):
+def load_image(jpg_file, x_scale=1, y_scale=1):
     if jpg_file:
         im = Image.open(jpg_file)
         if im:
-            print('Sucessfully loaded image!')
-            return im
-        else:
-            print('Unable to load image.')
-    return None 
+            if x_scale != 1 or y_scale != 1:
+                (width, height) = (im.width//x_scale, im.height//y_scale)
+                im = im.resize((width, height))
+                return im
+            else:
+                print('Unable to load image!')
+                return None 
 
 def image_info(image):
     print(f'Image size: {image.size[0]} x {image.size[1]}')
 
 # 2. Load images pixel data into a 2-d array
-def image_to_pixels(image):
+def build_pixel_matrix(image):
+    # image.getdata() returns a 1-D array
+    # When refactoring consider list composition to make code more pythonic
     pixel_matrix = []
     pixel_matrix_width = image.size[0]
     pixel_matrix_height = image.size[1]
@@ -30,20 +35,47 @@ def image_to_pixels(image):
     
     return pixel_matrix
 
-def pixel_matrix(image):
-    '''Returns a flattened array of pixel data.'''
-    print(list(image.getdata()))
 
 # 3. Create brightness matrix
 def average_brightness(pixel):
-    return (pixel[0] + pixel[1] + pixel[2] / 3)
+    return (pixel[0] + pixel[1] + pixel[2]) / 3
 
 def lightness(pixel):
-    return (max(pixel[0] + pixel[1] + pixel[2]) + min(pixel[0] + pixel[1] + pixel[2])) / 2
+    return (max(pixel[0], pixel[1], pixel[2]) + min(pixel[0], pixel[1], pixel[2])) / 2
 
 def luminosity(pixel):
     return (0.21 * pixel[0]) + (0.72 * pixel[1]) + (0.07 * pixel[2])
+
+def build_brightness_matrix(pixel_matrix, filter=average_brightness):
+    brightness_matrix = []
+    for row in pixel_matrix:
+        brightness_matrix_row = []
+        for pixel in row:
+            brightness_matrix_row.append(round(filter(pixel), 0))
+        brightness_matrix.append(brightness_matrix_row)
+    
+    return brightness_matrix
+            
+# 4. Convert brightness to ascii character
+def brightness_to_char(brightness):
+    ascii_chars = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
+    return ascii_chars[int(brightness % len(ascii_chars))]
           
+def build_char_matrix(brightness_matrix):
+    char_matrix = []
+    for row in brightness_matrix:
+        char_matrix_row = []
+        for brightness in row:
+            char_matrix_row.append(brightness_to_char(brightness))
+        char_matrix.append(char_matrix_row)
+    
+    return char_matrix
+
+def save_ascii_art(char_matrix):
+    with open('ascii_art.txt', 'w') as f:
+        for row in char_matrix:
+            f.write(''.join(row) + "\n")
+
 
 
 if __name__ == "__main__":
@@ -55,8 +87,20 @@ if __name__ == "__main__":
     
     jpg_image = os.path.join(data_dir, 'potato_head.jpg')
 
-    image = load_image(jpg_image)
+    image = load_image(jpg_image, 9, 3)
     image_info(image)
-    image_to_pixels(image)
+    pixel_matrix = build_pixel_matrix(image)
+    brightness_matrix = build_brightness_matrix(pixel_matrix, lightness)
+    char_matrix = build_char_matrix(brightness_matrix)
+    save_ascii_art(char_matrix)
+
     
+    # TODO:
+    # Image seems to be rotates left by 90
+    # Hard Code scaling factor
+    # Build tests
+    # Refactor by simplifying. Can go from pixel to char in one function.
+
+    # Object Oriented package for flask app
     
+    # Bonos sections on project
