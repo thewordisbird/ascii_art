@@ -97,14 +97,34 @@ def full_build(image, brightness_type=average_brightness, inverse=False):
         else:
             row_string = row_string + ascii_char
 
-class AsciiArt:
-    def __init__(self, image_path, x_scale=1, y_scale=1, brightness_type='average', inverse=False ):
-        self.image = self.load_image(image_path)
+
+class Pixel:
+    def __init__(self, rgb_pixel):
+        self.rgb_pixel = rgb_pixel
+        self.ascii_char = None
+
+    def average_brightness(self):
+        return (rgb_pixel[0] + rgb_pixel[1] + rgb_pixel[2]) / 3
+
+    def lightness(self):
+        return (max(rgb_pixel[0], rgb_pixel[1], rgb_pixel[2]) + min(rgb_pixel[0], rgb_pixel[1], rgb_pixel[2])) / 2
+
+    def luminosity(self):
+        return (0.21 * rgb_pixel[0]) + (0.72 * rgb_pixel[1]) + (0.07 * rgb_pixel[2])
+
+    def set_ascii_char(self, brightness_filter):
         
-        self.x_scale = x_scale
-        self.y_scale = y_scale
-        self.brightness_type = brightness_type
-        self.inverse = inverse
+
+
+
+
+class AsciiArt:
+    def __init__(self, image):
+        self.image = image     
+        self.x_scale = 1
+        self.y_scale = 1
+        self.brightness_type = average_brightness
+        self.inverse = False
         self.ascii_image = self.load_ascii_image()
 
     def load_image(self, image_path):
@@ -128,14 +148,7 @@ class AsciiArt:
     def get_pixel_brightness(self, rgb_pixel):
         return self.brightness_type(rgb_pixel)
 
-    def average_brightness(self, rgb_pixel):
-        return (rgb_pixel[0] + rgb_pixel[1] + rgb_pixel[2]) / 3
-
-    def lightness(self, rgb_pixel):
-        return (max(rgb_pixel[0], rgb_pixel[1], rgb_pixel[2]) + min(rgb_pixel[0], rgb_pixel[1], rgb_pixel[2])) / 2
-
-    def luminosity(self, rgb_pixel):
-        return (0.21 * rgb_pixel[0]) + (0.72 * rgb_pixel[1]) + (0.07 * rgb_pixel[2])
+    
 
     def get_ascii_char(self, pixel_brightness):
         ascii_chars = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
@@ -169,7 +182,7 @@ if __name__ == "__main__":
     #save_ascii_art(char_matrix)
     #print_to_terminal(char_matrix)
 
-    full_build(image, average_brightness, True)
+    #full_build(image, average_brightness, True)
     
     # TODO:
     # Image seems to be rotates left by 90
