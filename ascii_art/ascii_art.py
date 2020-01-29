@@ -64,11 +64,7 @@ def full_build(image, brightness_calc, inverse=False):
             row_string = ''
         else:
             row_string = row_string + ascii_char
-
-
- 
-
-
+            
 # Print and/or display methods
 def save_ascii_art(char_matrix):
     with open('ascii_art.txt', 'w') as f:
@@ -97,10 +93,8 @@ if __name__ == "__main__":
     full_build(image, average_brightness, True)
     
     # TODO:
-    
-    # 
-    # Build tests
-    
+   
+    # Write tests    
 
     # Object Oriented package for flask app
     
