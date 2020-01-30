@@ -35,13 +35,15 @@ def image_info(image):
 
 
 # Convert brightness to ascii character
-def brightness_to_char(brightness, inverse):
+def brightness_to_char(brightness, brightness_range, inverse):
     ascii_chars = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
     #ascii_chars = " `\":I!~_?[{)|/frnvzYJL0Zwpbho#W8B$"
     if inverse:
-        ascii_chars = ''.join([ascii_chars[i] for i in range(len(ascii_chars) - 1, -1, -1)])
-
-    return ascii_chars[int(brightness % len(ascii_chars))]
+        ascii_chars = " " + ''.join([ascii_chars[i] for i in range(len(ascii_chars) - 1, -1, -1)])
+    else:
+        ascii_chars = ascii_chars + " "
+    #print(int(brightness * ((len(ascii_chars)-1)/brightness_range)))
+    return ascii_chars[int(brightness * ((len(ascii_chars)-1)/brightness_range))]
 
 
 # Brightness Calculations
@@ -56,14 +58,21 @@ def luminosity(pixel):
 
 def full_build(image, brightness_calc, inverse=False):
     row_string = ''
+    min_brightness = min(brightness_calc(pixel) for pixel in image.getdata())
+    max_brightness = max(brightness_calc(pixel) for pixel in image.getdata())
+    brightness_range = max_brightness - min_brightness
+
     for i, p in enumerate(image.getdata()):
-        brightness = brightness_calc(p)
-        ascii_char = brightness_to_char(brightness, inverse)
+        adjusted_brightness = brightness_calc(p) - min_brightness
+        ascii_char = brightness_to_char(adjusted_brightness, brightness_range, inverse)
         if i % image.size[0] - 1 == 0:
             print(row_string + ascii_char)
             row_string = ''
         else:
             row_string = row_string + ascii_char
+
+
+
             
 # Print and/or display methods
 def save_ascii_art(char_matrix):
@@ -89,8 +98,11 @@ if __name__ == "__main__":
     #jpg_image = os.path.join(data_dir, 'face.jpeg')
     jpg_image = os.path.join(data_dir, 'vans.png')
 
-    image = load_image(jpg_image, 6, 18)
-    full_build(image, average_brightness, True)
+    image = load_image(jpg_image, 6, 14)
+    #image = load_image(jpg_image)
+
+    #full_build(image, average_brightness, False)
+    full_build(image, average_brightness, False)
     
     # TODO:
    
