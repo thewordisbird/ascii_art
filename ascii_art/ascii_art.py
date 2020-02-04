@@ -34,58 +34,137 @@ def image_info(image):
         print(f'Image size: {image.size[0]} x {image.size[1]}')
 
 
-# Convert brightness to ascii character
 def brightness_to_char(brightness, brightness_range, inverse):
-    ascii_chars = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
-    #ascii_chars = " `\":I!~_?[{)|/frnvzYJL0Zwpbho#W8B$"
+    """
+    Determines ascii character to display based on brightness.
+
+    Modify the ascii_chars string to change the resolution. 
+
+    Parameters:
+        brightness (float): Calculated brighness values between 0 and 255.
+        brigtness_range (float): Max brightness - min brightness.
+        inverse (bool): Trigger for weather or not the image is to be inverse.
+
+    Returns:
+        ascii_char (str): Character from availible ascii_chars list.
+    """
+    # Found that fewer characters seem to display the image better.
+    #ascii_chars = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
+    ascii_chars = " \":|H0#"
     if inverse:
         ascii_chars = " " + ''.join([ascii_chars[i] for i in range(len(ascii_chars) - 1, -1, -1)])
     else:
         ascii_chars = ascii_chars + " "
-    #print(int(brightness * ((len(ascii_chars)-1)/brightness_range)))
+    
     return ascii_chars[int(brightness * ((len(ascii_chars)-1)/brightness_range))]
 
 
 # Brightness Calculations
 def average_brightness(pixel):
+    """
+    Calculates pixel brightness as the average of the RGB pixels.
+
+    Parameters:
+        pixel (tuple): (r, g, b) pixel information.
+
+    Returns:
+        average_brightness (float)
+    """
     return (pixel[0] + pixel[1] + pixel[2]) / 3
 
+
 def lightness(pixel):
+    """
+    Calculates pixel brightness as the lightness of the RGB pixels.
+
+    Parameters:
+        pixel (tuple): (r, g, b) pixel information.
+
+    Returns:
+        lightness (float)
+    """
     return (max(pixel[0], pixel[1], pixel[2]) + min(pixel[0], pixel[1], pixel[2])) / 2
 
+
 def luminosity(pixel):
+    """
+    Calculates pixel brightness as the luminosity of the RGB pixels.
+
+    Parameters:
+        pixel (tuple): (r, g, b) pixel information.
+
+    Returns:
+        luminosity (float)
+    """
     return (0.21 * pixel[0]) + (0.72 * pixel[1]) + (0.07 * pixel[2])
 
-def full_build(image, brightness_calc, inverse=False):
-    row_string = ''
+   
+def build_ascii_arr(image, brightness_calc, inverse=False):
+    """
+    Glue funciton takes PIL image object and calculates brightness for each pixel depending on 
+    the desired calculation. It also determines the brightness range to get better contrast. 
+    Lastly, an ascii character is determined and added to a new array,
+
+    Parameters:
+        image (PIL Image Obj)
+        brightness_calc (function obj): The desired brightness calculation method
+        inverse (bool): Default set to false. 
+
+    Returns:
+        ascii_arr, image_widt, image_height (tuple): 
+
+    Dependencies:
+        brightness_calc: This is a funciton object that is passed in at run time.
+        brightness_to_char:
+    """
     min_brightness = min(brightness_calc(pixel) for pixel in image.getdata())
     max_brightness = max(brightness_calc(pixel) for pixel in image.getdata())
     brightness_range = max_brightness - min_brightness
-
-    for i, p in enumerate(image.getdata()):
+    ascii_arr = []
+    for p in image.getdata():
         adjusted_brightness = brightness_calc(p) - min_brightness
         ascii_char = brightness_to_char(adjusted_brightness, brightness_range, inverse)
-        if i % image.size[0] - 1 == 0:
-            print(row_string + ascii_char)
-            row_string = ''
-        else:
-            row_string = row_string + ascii_char
+        ascii_arr.append(ascii_char)
+    return ascii_arr, image.size[0], image.size[1]
 
 
-
-            
 # Print and/or display methods
-def save_ascii_art(char_matrix):
-    with open('ascii_art.txt', 'w') as f:
-        for row in char_matrix:
-            f.write(''.join(row) + "\n")
+def save_ascii_art(ascii_arr, image_width, image_height):
+    """
+    Saves ascii_arr to .txt file
 
-def print_to_terminal(char_matrix):
-    for row in char_matrix:
-        row_string = ''
-        for pixel in row:
-            row_string = row_string + pixel
-        print(row_string)
+    Parameters:
+        ascii_arr (list obj): list of ascii characters.
+        image_width (int):
+        image_height (int):
+    """
+    with open('ascii_art.txt', 'w') as f:
+        ascii_row = []
+        for i,p in enumerate(ascii_arr):
+            if i % image_width - 1 == 0:
+                ascii_row.append(p)
+                f.write(''.join(ascii_row) + "\n")
+                ascii_row = []
+            else:
+                ascii_row.append(p)
+
+
+def print_to_terminal(ascii_arr, image_width, image_height):
+    """
+    Prints ascii_arr to terminal
+
+    Parameters:
+        ascii_arr (list obj): list of ascii characters.
+        image_width (int):
+        image_height (int):
+    """
+    ascii_row = ''
+    for i, p in enumerate(ascii_arr):
+        if i % image.size[0] - 1 == 0:
+            print(ascii_row + p)
+            ascii_row = ''
+        else:
+            ascii_row = ascii_row + p
 
 if __name__ == "__main__":
     # Get relative path to data folder for image file
@@ -97,13 +176,16 @@ if __name__ == "__main__":
     #jpg_image = os.path.join(data_dir, 'zebra.jpg')
     #jpg_image = os.path.join(data_dir, 'face.jpeg')
     jpg_image = os.path.join(data_dir, 'vans.png')
+    #jpg_image = os.path.join(data_dir, 'm.jpg')
 
-    image = load_image(jpg_image, 6, 14)
+    image = load_image(jpg_image,6, 24)
     #image = load_image(jpg_image)
 
     #full_build(image, average_brightness, False)
-    full_build(image, average_brightness, False)
-    
+    ascii_arr, width, height = build_ascii_arr(image, average_brightness, False)
+   
+    save_ascii_art(ascii_arr, width, height)
+    print_to_terminal(ascii_arr, width, height)
     # TODO:
    
     # Write tests    
