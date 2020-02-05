@@ -1,0 +1,8 @@
+#!/bin/bash
+
+
+# Change to project directory
+cd ..
+
+# Run docker run command
+docker run --rm -it --mount type=bind,source="$(pwd)",destination=/usr/src/app ascii_art bash
