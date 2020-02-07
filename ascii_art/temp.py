@@ -58,12 +58,12 @@ class AsciiArt:
 
         return ascii_chars[int(pixel_brightness % len(ascii_chars))]
         
-                       A          SSSSS     
-                      AAA       SSS   SSS  
-                     AAAAA        SSS 
-                    AAA AAA         SSS
-                   AAA   AAA          SSS 
-                  AAAAAAAAAAA  SSS      SSS
-                 AAAAAAAAAAAAA   SSS   SSS 
-                AAA         AAA    SSSSS      
-               AAA           AAA
+                       A            SSSSSSS        CCCCCCC   IIIIIIIII  IIIIIIIII
+                      AAA         SSSS   SSSS    CCCC  CCCC     III        III
+                     AAAAA        SSS     SSS   CCC     CCC     III        III 
+                    AAA AAA        SSSSS        CCC             III        III 
+                   AAA   AAA          SSSSS     CCC             III        III     
+                  AAAAAAAAAAA           SSSS    CCC             III        III     
+                 AAAAAAAAAAAAA    SSS     SSS   CCC     CCC     III        III 
+                AAA         AAA   SSSS   SSSS    CCCC  CCCC     III        III 
+               AAA           AAA    SSSSSSS        CCCCCC    IIIIIIIII  IIIIIIIII
