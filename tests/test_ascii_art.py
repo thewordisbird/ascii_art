@@ -67,7 +67,20 @@ def test_image():
 #        [(0, 0, 255), (0, 0, 255), (0, 0, 255), (0, 0, 255)],
 #        [(0, 0, 255), (0, 0, 255), (0, 0, 255), (0, 0, 255)]
 #    ]
+@pytest.mark.parametrize('mode, pixel, result',
+                        [
+                            ('average', (123, 34, 211), 122),
+                            ('ave', (123, 34, 211), 122),
+                            ('', (123, 34, 211), 122),
+                            ('lightness', (123, 34, 211), 122),
+                            ('luminosity', (123, 34, 211), 65),
 
-def test_brightness_construction():
-    bc = Brightness('average')
-    assert bc != None
+                        ])
+def test_brightness_calc(mode, pixel, result):
+    # GIVEN a brightness calculation
+    # WHEN the brightness object is passed a pixel tuple
+    # THEN the calc method of the brightness class will calculate
+    # the brightness based on the set calculation mode attribute
+
+    bc = Brightness(mode)
+    assert bc.calc(pixel) == result

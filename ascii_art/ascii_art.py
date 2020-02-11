@@ -18,15 +18,15 @@ class Brightness:
     """
     
     def __init__(self, calc):
-        self.brightness_calc = {
+        self.calc_mode = {
             "average": self.average_brightness,
             "lightness": self.lightness,
             "luminosity": self.luminosity
         }
-        if calc in self.brightness_calc:
-            self.calc = self.brightness_calc[calc]
+        if calc in self.calc_mode:
+            self.calc = self.calc_mode[calc]
         else:
-            self.calc = self.brightness_calc["average"]
+            self.calc = self.calc_mode["average"]
 
 
     def average_brightness(self, pixel):
@@ -39,7 +39,7 @@ class Brightness:
         Returns:
             average_brightness (float)
         """
-        return (pixel[0] + pixel[1] + pixel[2]) / 3
+        return (pixel[0] + pixel[1] + pixel[2]) // 3
 
     
     def lightness(self, pixel):
@@ -52,7 +52,7 @@ class Brightness:
         Returns:
             lightness (float)
         """
-        return (max(pixel[0], pixel[1], pixel[2]) + min(pixel[0], pixel[1], pixel[2])) / 2
+        return (max(pixel[0], pixel[1], pixel[2]) + min(pixel[0], pixel[1], pixel[2])) // 2
 
 
     def luminosity(self, pixel):
@@ -65,8 +65,8 @@ class Brightness:
         Returns:
             luminosity (float)
         """
-        #return (0.21 * pixel[0]) + (0.72 * pixel[1]) + (0.07 * pixel[2])
-        return (0.72 * pixel[0]) + (0.07 * pixel[1]) + (0.21 * pixel[2])
+        return int((0.21 * pixel[0]) + (0.72 * pixel[1]) + (0.07 * pixel[2]))
+        
 
 
 def load_image(img_path, x_scale=1, y_scale=3):
@@ -215,8 +215,8 @@ if __name__ == "__main__":
 
     #full_build(image, average_brightness, False)
     #ascii_arr, width, height = build_ascii_arr(image, "average", False)
-    ascii_arr, width, height = build_ascii_arr(image, "lightness", False)
-    #ascii_arr, width, height = build_ascii_arr(image, "luminosity", False)
+    #ascii_arr, width, height = build_ascii_arr(image, "lightness", False)
+    ascii_arr, width, height = build_ascii_arr(image, "luminosity", False)
    
     save_ascii_art(ascii_arr, width, height)
     print_to_terminal(ascii_arr, width, height)
