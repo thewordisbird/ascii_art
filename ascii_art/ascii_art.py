@@ -2,12 +2,6 @@ import os
 import csv
 from PIL import Image
 
-class Test:
-    def __init__(self, name):
-        self.name = name
-
-    def print_name(self):
-        print(self.name)
 
 class Brightness:
     """
@@ -169,7 +163,7 @@ def save_ascii_art(ascii_arr, image_width, image_height):
         image_width (int):
         image_height (int):
     """
-    with open('ascii_art.txt', 'w') as f:
+    with open('data/ascii_art.txt', 'w') as f:
         ascii_row = []
         for i,p in enumerate(ascii_arr):
             if i % image_width - 1 == 0:

@@ -1,11 +1,6 @@
 import os
-
 import pytest
-
 from ascii_art import Brightness
-
-#from PIL import Image
-#from ascii_art import ascii_art as a
 
 # Need to setup test image fixture to save image and delete it after teseting. 
 
@@ -31,7 +26,7 @@ def test_image():
             print(f'Pixel at: {i,j} | {px[i,j]}')
             
     # save test image in test file while testing
-    test_image_path = os.path.join(os.path.dirname(os.path.join(os.path.abspath(__file__))), 'test_img.jpg')
+    test_image_path = os.path.join(os.path.dirname(os.path.join(os.path.abspath(__file__))), 'test_img.png')
     print(test_image_path)
     im.save(test_image_path)
     yield test_image_path
