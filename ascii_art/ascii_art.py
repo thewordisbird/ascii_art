@@ -1,5 +1,6 @@
 import os
 import csv
+
 from PIL import Image
 
 
@@ -10,7 +11,6 @@ class Brightness:
     Parameters:
         calc (str): String name for calculation choice.
     """
-    
     def __init__(self, calc):
         self.calc_mode = {
             "average": self.average_brightness,
@@ -109,12 +109,12 @@ def brightness_to_char(brightness, brightness_range, inverse):
         ascii_char (str): Character from availible ascii_chars list.
     """
     # Found that fewer characters seem to display the image better.
-    ascii_chars = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
-    #ascii_chars = " \":|H0#"
+    #ascii_chars = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
+    ascii_chars = ' `":|hH0#'
     if inverse:
-        ascii_chars = " " + ''.join([ascii_chars[i] for i in range(len(ascii_chars) - 1, -1, -1)])
+        ascii_chars = ascii_chars[::-1] 
     else:
-        ascii_chars = ascii_chars + " "
+        ascii_chars = ascii_chars
     
     return ascii_chars[int(brightness * ((len(ascii_chars)-1)/brightness_range))]
 
@@ -198,13 +198,16 @@ if __name__ == "__main__":
     parent_dir = os.path.dirname(app_dir)
     data_dir = os.path.join(parent_dir, 'data')
     
-    jpg_image = os.path.join(data_dir, 'zebra.jpg')
+    #jpg_image = os.path.join(data_dir, 'zebra.jpg')
     #jpg_image = os.path.join(data_dir, 'face.jpeg')
     #jpg_image = os.path.join(data_dir, 'vans.png')
-    #jpg_image = os.path.join(data_dir, 'm.jpg')
+    jpg_image = os.path.join(data_dir, 'm.jpg')
 
-    #image = load_image(jpg_image,18, 28)
-    image = load_image(jpg_image,3, 9)
+    # For m
+    image = load_image(jpg_image,14, 28)
+
+    # For Zebra
+    #image = load_image(jpg_image,3, 9)
     #image = load_image(jpg_image)
 
     #full_build(image, average_brightness, False)
