@@ -69,5 +69,5 @@ def test_image():
 #    ]
 
 def test_brightness_construction():
-    bc = ascii_art.Brightness('average')
+    bc = Brightness('average')
     assert bc != None
