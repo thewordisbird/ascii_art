@@ -53,19 +53,6 @@ def test_image_info(test_image, capsys):
     captured = capsys.readouterr()
     assert captured.out == f'Image size: {im.size[0]} x {im.size[1]}\n'
 
-def test_image_to_pixels(test_image):
-    im = Image.open(test_image)
-    print(a.image_to_pixels(im))
-    assert a.image_to_pixels(im) == [
-        [(255, 0, 0), (255, 0, 0), (255, 0, 0), (255, 0, 0)],
-        [(255, 0, 0), (255, 0, 0), (255, 0, 0), (255, 0, 0)],
-        [(0, 255, 0), (0, 255, 0), (0, 255, 0), (0, 255, 0)],
-        [(0, 255, 0), (0, 255, 0), (0, 255, 0), (0, 255, 0)],
-        [(0, 0, 255), (0, 0, 255), (0, 0, 255), (0, 0, 255)],
-        [(0, 0, 255), (0, 0, 255), (0, 0, 255), (0, 0, 255)]
-    ]
-
-
 @pytest.mark.parametrize('mode, pixel, result',
                         [
                             ('average', (123, 34, 211), 122),
@@ -88,23 +75,15 @@ def test_brightness_calc(mode, pixel, result):
 # MOVE ASCII CHARS OUTSIDE OF FUNCTION
 @pytest.mark.parametrize('brightness, brightness_range, inverse, char', 
                         [
-                            (15, (0,255), False, '' )
-                            (30, (0,255), False, )
-                            (45, (0,255), False, )
-                            (60, (0,255), False, )
-                            (75, (0,255), False, )
-                            (90, (0,255), False, )
-                            (105, (0,255), False, )
-                            (120), (0,255), False, )
-                            (135, (0,255), False, )
-                            (150, (0,255), False, )
-                            (165, (0,255), False, )
-                            (180, (0,255), False, )
-                            (195, (0,255), False, )
-                            (210, (0,255), False, )
-                            (225, (0,255), False, )
-                            (240, (0,255), False, )
-                            (255, (0,255), False, )
+                            (0, 255, False, '0' ),
+                            (0, 255, True, '5'),
+                            (135, 255, False, '3'),
+                            (135, 255, True, '2'),
+                            (225, 255, False, '4'),
+                            (225, 255, True, '1'),
+                            (255, 255, False, '5'),
+                            (255, 255, True, '0'),
                         ])
 def test_brightness_to_char(brightness, brightness_range, inverse, char):
-    assert a.brightness_to_char(brightness, brightness_range, inverse) == char
+    ascii_chars = '012345'
+    assert a.brightness_to_char(brightness, brightness_range, inverse, ascii_chars) == char

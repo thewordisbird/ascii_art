@@ -4,6 +4,10 @@ import csv
 from PIL import Image
 
 
+#ASCII_CHARS = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
+ASCII_CHARS = ' `":|hH0#'
+
+
 class Brightness:
     """
     Class to handle brightness calculations.
@@ -94,7 +98,7 @@ def image_info(image):
         print(f'Image size: {image.size[0]} x {image.size[1]}')
 
 
-def brightness_to_char(brightness, brightness_range, inverse):
+def brightness_to_char(brightness, brightness_range, inverse, ascii_chars=ASCII_CHARS):
     """
     Determines ascii character to display based on brightness.
 
@@ -104,22 +108,20 @@ def brightness_to_char(brightness, brightness_range, inverse):
         brightness (float): Calculated brighness values between 0 and 255.
         brigtness_range (float): Max brightness - min brightness.
         inverse (bool): Trigger for weather or not the image is to be inverse.
+        ascii_chars (str): String of ascii characters to use in ascii_art. 
+            NOTE: For now this is in a global variable. This will eventually be 
+            user customizable which is why the function is built this way
 
     Returns:
         ascii_char (str): Character from availible ascii_chars list.
     """
-    # Found that fewer characters seem to display the image better.
-    #ascii_chars = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
-    ascii_chars = ' `":|hH0#'
+    
     if inverse:
         ascii_chars = ascii_chars[::-1] 
     else:
         ascii_chars = ascii_chars
     
-    return ascii_chars[int(brightness * ((len(ascii_chars)-1)/brightness_range))]
-
-
-
+    return ascii_chars[round(brightness * ((len(ascii_chars)-1)/brightness_range))]
 
    
 def build_ascii_arr(image, brightness_calc, inverse=False):
