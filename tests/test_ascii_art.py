@@ -3,7 +3,7 @@ import pytest
 from PIL import Image
 
 import ascii_art as a
-from ascii_art import Brightness
+from ascii_art import Brightness, AsciiArt
 
 # Need to setup test image fixture to save image and delete it after teseting. 
 
@@ -37,21 +37,47 @@ def test_image():
     # Delete image file
     os.remove(test_image_path)
 
-def test_load_image(test_image):
+
+@pytest.mark.parametrize('kwargs',
+                        [
+                            ({}),
+                            ({'x_scale': 2, 'y_scale': 4})
+                        ])
+def test_constuct_AsciiArt_class(test_image, kwargs):
+    # GIVEN an image path and **kwargs for attribute modifications
+    # WHEN used to construct the class
+    # THEN the class attributes will be set to the updated argument or the default if not given
+    a = AsciiArt(test_image, **kwargs)
+    attributes = {'x_scale': a.x_scale, 'y_scale': a.y_scale, 'brightness_calc': a.brightness_calc, 'inverse': a.inverse}
+    default_values = {'x_scale': 1, 'y_scale': 3, 'brightness_calc': 'average', 'inverse': False}
+    for k,v in attributes.items():
+        if k in kwargs:
+            assert v == kwargs[k]
+        else:
+            assert v == default_values[k]
+
+
+def test_resize_image(test_image):
     # GIVEN a path to an image (png or jpg)
     # WHEN passed to the load image function
     # THEN the image will be converted to a PIL Image
-    im = a.load_image(test_image)
-    assert type(im).__name__ is 'Image'
+    a = AsciiArt(test_image, x_scale=1, y_scale=1)
+    a_width, a_height = a.image.size[0], a.image.size[1]
+    img = Image.open(test_image)
+
+    assert a_width == img.size[0]
+    assert a_height == img.size[1]
+
 
 def test_image_info(test_image, capsys):
     # GIVEN a PIL Image object
     # WHEN the image_info function is called on the PIL Image object.
     # THEN the width and height of the image will be printed
-    im = Image.open(test_image)
-    a.image_info(im)
+    img = Image.open(test_image)
+    a = AsciiArt(test_image, x_scale=1, y_scale=1)
+    a.image_info()
     captured = capsys.readouterr()
-    assert captured.out == f'Image size: {im.size[0]} x {im.size[1]}\n'
+    assert captured.out == f'Image size: {img.size[0]} x {img.size[1]}\n'
 
 @pytest.mark.parametrize('mode, pixel, result',
                         [
