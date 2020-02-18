@@ -2,8 +2,7 @@ import os
 import pytest
 from PIL import Image
 
-import ascii_art as a
-from ascii_art import Brightness, AsciiArt
+from ascii_art import Brightness, AsciiArt, test
 
 # Need to setup test image fixture to save image and delete it after teseting. 
 
@@ -38,23 +37,46 @@ def test_image():
     os.remove(test_image_path)
 
 
-@pytest.mark.parametrize('kwargs',
+
+def test_constuct_AsciiArt_class(test_image):
+    a = AsciiArt(test_image)
+    assert a.image.width == 3
+    assert a.image.height == 3
+
+@pytest.mark.parametrize('test_width, test_height, scale',
                         [
-                            ({}),
-                            ({'x_scale': 2, 'y_scale': 4})
+                            (500, 200, 1)
+
                         ])
-def test_constuct_AsciiArt_class(test_image, kwargs):
-    # GIVEN an image path and **kwargs for attribute modifications
-    # WHEN used to construct the class
-    # THEN the class attributes will be set to the updated argument or the default if not given
-    a = AsciiArt(test_image, **kwargs)
-    attributes = {'x_scale': a.x_scale, 'y_scale': a.y_scale, 'brightness_calc': a.brightness_calc, 'inverse': a.inverse}
-    default_values = {'x_scale': 1, 'y_scale': 3, 'brightness_calc': 'average', 'inverse': False}
-    for k,v in attributes.items():
-        if k in kwargs:
-            assert v == kwargs[k]
-        else:
-            assert v == default_values[k]
+def test_scale_for_terminal(test_image, monkeypatch, test_width, test_height, scale):
+    a = AsciiArt(test_image)
+    
+    # monkeypatch terminal size
+    monkeypatch.setattr(os.popen('stty size', 'r'), 'read()', lambda: f'{test_width} {test_height}')
+    
+
+    assert a.scale_for_terminal() == scale
+
+
+
+
+def test_test(monkeypatch):
+
+    def mock_size():
+        return '2 2\n'
+    # monkeypatch terminal size
+    monkeypatch.setattr(os.popen('stty size', 'r'), 'read', mock_size)
+
+    assert test() == '2 2'
+
+
+
+
+
+
+
+
+
 
 
 def test_resize_image(test_image):
@@ -62,6 +84,7 @@ def test_resize_image(test_image):
     # WHEN passed to the load image function
     # THEN the image will be converted to a PIL Image
     a = AsciiArt(test_image, x_scale=1, y_scale=1)
+    a.resize_image()
     a_width, a_height = a.image.size[0], a.image.size[1]
     img = Image.open(test_image)
 

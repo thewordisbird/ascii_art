@@ -65,38 +65,48 @@ class Brightness:
         
 
 class AsciiArt:
-    def __init__(self, image_path, **kwargs):
+    def __init__(self, image_path):
         #self.ascii_chars = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
         self.ascii_chars = ' `":|hH0#'
-        self.allowed_keys = {'x_scale', 'y_scale', 'brightness_calc', 'inverse'}
-        #self.defaults = {'x_scale': 1, 'y_scale': 3, 'brightness_calc': 'average', 'inverse': False}
         self.x_scale = 1
         self.y_scale = 3
         self.brightness_calc = 'average'
         self.inverse = False
-        
-        for key, value in kwargs.items():
-            if key in self.allowed_keys:
-                setattr(self, key, value)
-        
         self.image = Image.open(image_path)
 
-        self.resize_image()
+    
+    
 
-    def resize_image(self):
-        """
-        Resize PIL Image object.
 
-        Parameters:
-            img_path (str): Path to jpeg file.
-            x_scale (int): Scale factor for image width. Defaults to 1.
-            y_scale (int): Scale factor for image height. Defaults to 3.
-        """
-        (width, height) = (self.image.width // self.x_scale, self.image.height // self.y_scale)
-        print(width, height)
-        self.image = self.image.resize((width, height))
+    def scale_for_terminal(self):
+        term_width, term_height = os.popen('stty size', 'r').read().split()
+
+        # Scale for terminal character size (based on x_scale and y_scale attribute)
+        img_width = self.image.width // self.x_scale
+        img_height = self.imagr.height // self.y_scale
+        
+        if img_width <= term_width and img_height <= term_height:
+            return 1
+        
+        else:
+            img_scale = img_width / img_height
+
+            output_width = output_height = 0
+            
+            # Scale for availible terminal size. Needs to check based on width and height since both can vary
+            if term_width / img_scale <= term_height:
+                output_width = term_width
+                output_height = term_width / img_scale
+
+            if img_scale * term_height <= term_width and term_height > output_height:
+                output_width = img_scale * term_height
+                output_height = term_height
+
+            return img_width // output_width
+
+            # Return resized PIL Image object
+            #return self.image.resize(self.image.width//output_scale, self.image.height//output_scale)
                 
-
 
     def image_info(self):
         """
@@ -204,6 +214,8 @@ class AsciiArt:
             else:
                 ascii_row = ascii_row + p
 
+
+
 if __name__ == "__main__":
     # Get relative path to data folder for image file
     app_path = os.path.abspath(__file__)
@@ -237,3 +249,7 @@ if __name__ == "__main__":
     # Object Oriented package for flask app
     
     # Bonos sections on project
+
+def test():
+    size = os.popen('stty size', 'r').read()
+    return size
