@@ -71,7 +71,33 @@ class AsciiArt:
         self.inverse = False
         self.image = Image.open(image_path)
 
-    def process_ascii_arr(self):
+    def print_to_terminal(self):
+        """
+        Prints ascii_arr to terminal
+
+        Parameters:
+            ascii_arr (list obj): list of ascii characters.
+            image_width (int):
+            image_height (int):
+        """
+        for ascii_row in self.process_ascii_art('terminal'):
+            print(ascii_row)
+
+    def print_to_file(self, path):
+        """
+        Saves ascii_arr to .txt file
+
+        Parameters:
+            ascii_arr (list obj): list of ascii characters.
+            image_width (int):
+            image_height (int):
+        """
+        with open(path + '/ascii_art.txt', 'w') as f:            
+            for ascii_row in self.process_ascii_art('file'):
+                    f.write(ascii_row + "\n")
+    
+
+    def process_ascii_art(self, destination):
         """
         Glue funciton takes PIL image object and calculates brightness for each pixel depending on 
         the desired calculation. It also determines the brightness range to get better contrast. 
@@ -87,11 +113,21 @@ class AsciiArt:
             brightness_calc: This is a funciton object that is passed in at run time.
             brightness_to_char:
         """
-        # Create scaled Image instance based on terminal size.
-        terminal_scale = self.scale_for_terminal()
-        (new_width, new_height) = (self.image.width//(self.x_scale * terminal_scale), self.image.height//(self.y_scale * terminal_scale))
+        # Scale image for output
+        if destination == 'terminal':
+            # Output to terminal
+            terminal_scale = self.scale_for_terminal()
+            (new_width, new_height) = (self.image.width//(self.x_scale * terminal_scale), self.image.height//(self.y_scale * terminal_scale))
+            
+        else:
+            # Output to file (8.5 X 11 assumed)
+            page_scale = self.scale_for_page()
+            (new_width, new_height) = (self.image.width//(self.x_scale * page_scale), self.image.height//(self.y_scale * page_scale))
+
+        # Create resized Image instance to process. 
         scaled_image = self.image.resize((int(new_width), int(new_height)))
-        
+
+
         # Initiate brightness calc object
         bc = Brightness(self.brightness_calc)
         min_brightness = min(bc.calc(pixel) for pixel in scaled_image.getdata())
@@ -110,19 +146,6 @@ class AsciiArt:
                 ascii_row.append(ascii_char)
             #ascii_arr.append(ascii_char)
         #return ascii_arr, image.size[0], image.size[1]
-
-
-    def print_to_terminal(self):
-        """
-        Prints ascii_arr to terminal
-
-        Parameters:
-            ascii_arr (list obj): list of ascii characters.
-            image_width (int):
-            image_height (int):
-        """
-        for ascii_row in self.process_ascii_arr():
-            print(ascii_row)
 
     def scale_for_terminal(self):
         term_size = Popen('stty size', shell=True, stdout=PIPE)
@@ -151,10 +174,33 @@ class AsciiArt:
 
             return img_width // output_width
 
-            # Return resized PIL Image object
-            #return self.image.resize(self.image.width//output_scale, self.image.height//output_scale)
 
-    
+    def scale_for_page(self):
+        page_width = 150
+        page_height = 150
+
+        # Scale for page character size (based on x_scale and y_scale attribute)
+        img_width = self.image.width // self.x_scale
+        img_height = self.image.height // self.y_scale
+        
+        if img_width <= page_width and img_height <= page_height:
+            return 1
+        
+        else:
+            img_scale = img_width / img_height
+
+            output_width = output_height = 0
+            
+            # Scale for availible terminal size. Needs to check based on width and height since both can vary
+            if page_width / img_scale <= page_height:
+                output_width = page_width
+                output_height = page_width / img_scale
+
+            if img_scale * page_height <= page_width and page_height > output_height:
+                output_width = img_scale * page_height
+                output_height = page_height
+
+            return img_width // output_width
 
                 
     # --- NEEDS TESTING ---
@@ -196,24 +242,7 @@ class AsciiArt:
 
 
     # Print and/or display methods
-    def save_ascii_art(ascii_arr, image_width, image_height):
-        """
-        Saves ascii_arr to .txt file
-
-        Parameters:
-            ascii_arr (list obj): list of ascii characters.
-            image_width (int):
-            image_height (int):
-        """
-        with open('data/ascii_art.txt', 'w') as f:
-            ascii_row = []
-            for i,p in enumerate(ascii_arr):
-                if i % image_width - 1 == 0:
-                    ascii_row.append(p)
-                    f.write(''.join(ascii_row) + "\n")
-                    ascii_row = []
-                else:
-                    ascii_row.append(p)
+    
 
 
 
@@ -224,32 +253,7 @@ if __name__ == "__main__":
     parent_dir = os.path.dirname(app_dir)
     data_dir = os.path.join(parent_dir, 'data')
     
-    #jpg_image = os.path.join(data_dir, 'zebra.jpg')
-    #jpg_image = os.path.join(data_dir, 'face.jpeg')
-    #jpg_image = os.path.join(data_dir, 'vans.png')
     jpg_image = os.path.join(data_dir, 'm.jpg')
-
-    # For m
-    #image = load_image(jpg_image,14, 28)
-
-    # For Zebra
-    #image = load_image(jpg_image,3, 9)
-    #image = load_image(jpg_image)
-
-    #full_build(image, average_brightness, False)
-    #ascii_arr, width, height = build_ascii_arr(image, "average", False)
-    #ascii_arr, width, height = build_ascii_arr(image, "lightness", False)
-    #ascii_arr, width, height = build_ascii_arr(image, "luminosity", False)
-   
-    #save_ascii_art(ascii_arr, width, height)
-    #print_to_terminal(ascii_arr, width, height)
-    # TODO:
-   
-    # Write tests    
-
-    # Object Oriented package for flask app
-    
-    # Bonos sections on project
 
     a = AsciiArt(jpg_image)
     a.print_to_terminal()
