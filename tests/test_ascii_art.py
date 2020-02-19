@@ -1,9 +1,8 @@
 import os
 import pytest
 from PIL import Image
-
-from ascii_art import Brightness, AsciiArt, test
-
+import ascii_art
+from ascii_art import Brightness, AsciiArt
 # Need to setup test image fixture to save image and delete it after teseting. 
 
 # Need to setup app as editable package so it can be imported for testing
@@ -37,22 +36,28 @@ def test_image():
     os.remove(test_image_path)
 
 
-
 def test_constuct_AsciiArt_class(test_image):
     a = AsciiArt(test_image)
     assert a.image.width == 3
     assert a.image.height == 3
 
-@pytest.mark.parametrize('test_width, test_height, scale',
+
+@pytest.mark.parametrize('test_term_size, scale',
                         [
-                            (500, 200, 1)
+                            ('500 200\n', 1),
+                            ('1 3\n', 1),
+                            ('3 1\n', 3),
+
 
                         ])
-def test_scale_for_terminal(test_image, monkeypatch, test_width, test_height, scale):
+def test_scale_for_terminal(test_image, monkeypatch, test_term_size, scale):
     a = AsciiArt(test_image)
-    
+    def mock_terminal_size(cmd, **kwargs):
+        return test_term_size
+
     # monkeypatch terminal size
-    monkeypatch.setattr(os.popen('stty size', 'r'), 'read()', lambda: f'{test_width} {test_height}')
+    monkeypatch.setattr(ascii_art, 'Popen', mock_terminal_size)
+
     
 
     assert a.scale_for_terminal() == scale

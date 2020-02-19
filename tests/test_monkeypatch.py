@@ -1,15 +1,20 @@
-import os
-import pytest
 
-def get_terminal_size():
-    terminal_size = os.popen('stty size', 'r').read()
-    return terminal_size
+import pytest
+import m_patch
+import os
+
 
 def test_get_terminal_size(monkeypatch):
     # The get_terminal_size() function will return a string 'height width\n'
-    def mock_size():
+    def mock_terminal_size(cmd, **kwargs):
         return '10 20\n'
 
-    monkeypatch.setattr(os.popen('stty size', 'r'), 'read', mock_size)
+    monkeypatch.setattr(m_patch, 'Popen' , mock_terminal_size)
 
-    assert get_terminal_size() == '10 20\n'
+    assert m_patch.get_terminal_size() == '10 20\n'
+
+def test_get_path(monkeypatch):
+    def mock_abspath(pth):
+        return '/mock/path'
+    monkeypatch.setattr(m_patch.os.path, 'abspath', mock_abspath)
+    assert m_patch.get_path() == '/mock/path'

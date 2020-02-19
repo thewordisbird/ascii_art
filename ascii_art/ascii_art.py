@@ -1,9 +1,6 @@
 import os
-import csv
-
+from subprocess import Popen, PIPE
 from PIL import Image
-
-
 
 
 class Brightness:
@@ -66,24 +63,74 @@ class Brightness:
 
 class AsciiArt:
     def __init__(self, image_path):
-        #self.ascii_chars = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"
-        self.ascii_chars = ' `":|hH0#'
+        #self.ascii_chars = ' `^",:;Il!i~+_-?][}{1)(|/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$'
+        self.ascii_chars = ' `":i|nhH0#'
         self.x_scale = 1
-        self.y_scale = 3
+        self.y_scale = 2
         self.brightness_calc = 'average'
         self.inverse = False
         self.image = Image.open(image_path)
 
-    
-    
+    def process_ascii_arr(self):
+        """
+        Glue funciton takes PIL image object and calculates brightness for each pixel depending on 
+        the desired calculation. It also determines the brightness range to get better contrast. 
+        Lastly, an ascii character is determined and added to a new array,
 
+        Parameters:
+            
+
+        Returns:
+            ascii_arr, image_widt, image_height (tuple): 
+
+        Dependencies:
+            brightness_calc: This is a funciton object that is passed in at run time.
+            brightness_to_char:
+        """
+        # Create scaled Image instance based on terminal size.
+        terminal_scale = self.scale_for_terminal()
+        (new_width, new_height) = (self.image.width//(self.x_scale * terminal_scale), self.image.height//(self.y_scale * terminal_scale))
+        scaled_image = self.image.resize((int(new_width), int(new_height)))
+        
+        # Initiate brightness calc object
+        bc = Brightness(self.brightness_calc)
+        min_brightness = min(bc.calc(pixel) for pixel in scaled_image.getdata())
+        max_brightness = max(bc.calc(pixel) for pixel in scaled_image.getdata())
+        brightness_range = max_brightness - min_brightness
+        
+        # Build ascii_art pixel to char array
+        ascii_row = []
+        for i, p in enumerate(scaled_image.getdata()):
+            if i % scaled_image.width - 1 == 0:
+                yield ''.join(ascii_row)
+                ascii_row = []
+            else:
+                adjusted_brightness = bc.calc(p) - min_brightness
+                ascii_char = self.brightness_to_char(adjusted_brightness, brightness_range)
+                ascii_row.append(ascii_char)
+            #ascii_arr.append(ascii_char)
+        #return ascii_arr, image.size[0], image.size[1]
+
+
+    def print_to_terminal(self):
+        """
+        Prints ascii_arr to terminal
+
+        Parameters:
+            ascii_arr (list obj): list of ascii characters.
+            image_width (int):
+            image_height (int):
+        """
+        for ascii_row in self.process_ascii_arr():
+            print(ascii_row)
 
     def scale_for_terminal(self):
-        term_width, term_height = os.popen('stty size', 'r').read().split()
-
+        term_size = Popen('stty size', shell=True, stdout=PIPE)
+        term_height, term_width = map(lambda n: int(n.decode('utf-8')) - 1, term_size.communicate()[0].split())
+        
         # Scale for terminal character size (based on x_scale and y_scale attribute)
         img_width = self.image.width // self.x_scale
-        img_height = self.imagr.height // self.y_scale
+        img_height = self.image.height // self.y_scale
         
         if img_width <= term_width and img_height <= term_height:
             return 1
@@ -106,8 +153,11 @@ class AsciiArt:
 
             # Return resized PIL Image object
             #return self.image.resize(self.image.width//output_scale, self.image.height//output_scale)
-                
 
+    
+
+                
+    # --- NEEDS TESTING ---
     def image_info(self):
         """
         Prints the PIL image object information.
@@ -144,37 +194,6 @@ class AsciiArt:
         
         return ascii_chars[round(brightness * ((len(ascii_chars)-1)/brightness_range))]
 
-    
-    def build_ascii_arr(image, brightness_calc, inverse=False):
-        """
-        Glue funciton takes PIL image object and calculates brightness for each pixel depending on 
-        the desired calculation. It also determines the brightness range to get better contrast. 
-        Lastly, an ascii character is determined and added to a new array,
-
-        Parameters:
-            image (PIL Image Obj)
-            brightness_calc (function obj): The desired brightness calculation method
-            inverse (bool): Default set to false. 
-
-        Returns:
-            ascii_arr, image_widt, image_height (tuple): 
-
-        Dependencies:
-            brightness_calc: This is a funciton object that is passed in at run time.
-            brightness_to_char:
-        """
-        # initiate brightness calc object
-        bc = Brightness(brightness_calc)
-        min_brightness = min(bc.calc(pixel) for pixel in image.getdata())
-        max_brightness = max(bc.calc(pixel) for pixel in image.getdata())
-        brightness_range = max_brightness - min_brightness
-        ascii_arr = []
-        for p in image.getdata():
-            adjusted_brightness = bc.calc(p) - min_brightness
-            ascii_char = brightness_to_char(adjusted_brightness, brightness_range, inverse)
-            ascii_arr.append(ascii_char)
-        return ascii_arr, image.size[0], image.size[1]
-
 
     # Print and/or display methods
     def save_ascii_art(ascii_arr, image_width, image_height):
@@ -197,24 +216,6 @@ class AsciiArt:
                     ascii_row.append(p)
 
 
-    def print_to_terminal(ascii_arr, image_width, image_height):
-        """
-        Prints ascii_arr to terminal
-
-        Parameters:
-            ascii_arr (list obj): list of ascii characters.
-            image_width (int):
-            image_height (int):
-        """
-        ascii_row = ''
-        for i, p in enumerate(ascii_arr):
-            if i % image.size[0] - 1 == 0:
-                print(ascii_row + p)
-                ascii_row = ''
-            else:
-                ascii_row = ascii_row + p
-
-
 
 if __name__ == "__main__":
     # Get relative path to data folder for image file
@@ -229,7 +230,7 @@ if __name__ == "__main__":
     jpg_image = os.path.join(data_dir, 'm.jpg')
 
     # For m
-    image = load_image(jpg_image,14, 28)
+    #image = load_image(jpg_image,14, 28)
 
     # For Zebra
     #image = load_image(jpg_image,3, 9)
@@ -238,10 +239,10 @@ if __name__ == "__main__":
     #full_build(image, average_brightness, False)
     #ascii_arr, width, height = build_ascii_arr(image, "average", False)
     #ascii_arr, width, height = build_ascii_arr(image, "lightness", False)
-    ascii_arr, width, height = build_ascii_arr(image, "luminosity", False)
+    #ascii_arr, width, height = build_ascii_arr(image, "luminosity", False)
    
-    save_ascii_art(ascii_arr, width, height)
-    print_to_terminal(ascii_arr, width, height)
+    #save_ascii_art(ascii_arr, width, height)
+    #print_to_terminal(ascii_arr, width, height)
     # TODO:
    
     # Write tests    
@@ -250,6 +251,6 @@ if __name__ == "__main__":
     
     # Bonos sections on project
 
-def test():
-    size = os.popen('stty size', 'r').read()
-    return size
+    a = AsciiArt(jpg_image)
+    a.print_to_terminal()
+
