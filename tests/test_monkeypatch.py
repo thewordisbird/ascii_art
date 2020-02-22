@@ -18,3 +18,4 @@ def test_get_path(monkeypatch):
         return '/mock/path'
     monkeypatch.setattr(m_patch.os.path, 'abspath', mock_abspath)
     assert m_patch.get_path() == '/mock/path'
+

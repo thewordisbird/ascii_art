@@ -1,16 +1,25 @@
 import os
+import math
 from subprocess import Popen, PIPE
 from PIL import Image
 
 
 class Brightness:
-    """
-    Class to handle brightness calculations.
+    """Class to handle brightness calculations.
 
-    Parameters:
-        calc (str): String name for calculation choice.
+    Attributes:
+        calc_mode: A dictionary mapping calc strings to their class method.
+        calc: A string indicating which brightness calculation method to use.
     """
+
     def __init__(self, calc):
+        """Inits the Brightness class.
+
+        Args:
+            calc: A string indicating which brightness calculation method to use. Defaults
+            to 'average' if no string is provided or no item exists in the calc_mode dictionary.
+        """
+
         self.calc_mode = {
             "average": self.average_brightness,
             "lightness": self.lightness,
@@ -23,110 +32,91 @@ class Brightness:
 
 
     def average_brightness(self, pixel):
-        """
-        Calculates pixel brightness as the average of the RGB pixels.
-
-        Parameters:
-            pixel (tuple): (r, g, b) pixel information.
-
-        Returns:
-            average_brightness (float)
-        """
         return (pixel[0] + pixel[1] + pixel[2]) // 3
 
     
     def lightness(self, pixel):
-        """
-        Calculates pixel brightness as the lightness of the RGB pixels.
-
-        Parameters:
-            pixel (tuple): (r, g, b) pixel information.
-
-        Returns:
-            lightness (float)
-        """
         return (max(pixel[0], pixel[1], pixel[2]) + min(pixel[0], pixel[1], pixel[2])) // 2
 
 
     def luminosity(self, pixel):
-        """
-        Calculates pixel brightness as the luminosity of the RGB pixels.
-
-        Parameters:
-            pixel (tuple): (r, g, b) pixel information.
-
-        Returns:
-            luminosity (float)
-        """
         return int((0.21 * pixel[0]) + (0.72 * pixel[1]) + (0.07 * pixel[2]))
         
 
 class AsciiArt:
+    """Class to convert .jpg or .png image to ascii art.
+
+    Attributes:
+        ascii_chars: A string of ascii characters to be used in generating the image.
+        x_calibrate: An int value to calibrate the output to the non-square character spacing of the terminal.
+        y_calibrate: An int value to calibrate the output to the non-square characrer spacing of the terminal.
+        brightness_calc: A string to designate the brightness calculation type.
+        inverse: A boolean value to designate weather or not to inverse the ascii character string for image generation.
+        image: A PIL Image object containing the imported image.
+
+    Public Methods:
+        print_to_terminal(): Prints the ascii art image to the terminal.
+        print_to_file(): Prints the ascii art image to .txt file.
+    """
+
     def __init__(self, image_path):
+        """Inits the AsciiArt class.
+
+        Loads a .jpg, .jpeg or .png image to a PIL Image to be processed as ascii art.
+        Scaling defaults are set and image is set to false. These can be modified by 
+        accessing the object attribute directly. i.e.
+
+            a = AsciiArt('path/to/image')
+
+            # To modify inverse:
+            a.inverse = True
+
+        Args:
+            image_path: A string containing the path of the image to be processed.
+        """
+
         #self.ascii_chars = ' `^",:;Il!i~+_-?][}{1)(|/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$'
         self.ascii_chars = ' `":i|nhH0#'
-        self.x_scale = 1
-        self.y_scale = 2
+        self.x_calibrate = 1
+        self.y_calibrate = 2
         self.brightness_calc = 'average'
         self.inverse = False
         self.image = Image.open(image_path)
 
-    def print_to_terminal(self):
-        """
-        Prints ascii_arr to terminal
 
-        Parameters:
-            ascii_arr (list obj): list of ascii characters.
-            image_width (int):
-            image_height (int):
-        """
+    def print_to_terminal(self):
+        """Prints ascii_arr to terminal."""
+
         for ascii_row in self.process_ascii_art('terminal'):
             print(ascii_row)
 
-    def print_to_file(self, path):
-        """
-        Saves ascii_arr to .txt file
 
-        Parameters:
-            ascii_arr (list obj): list of ascii characters.
-            image_width (int):
-            image_height (int):
-        """
+    def print_to_file(self, path):
+        """Saves ascii_arr to .txt file."""
+
         with open(path + '/ascii_art.txt', 'w') as f:            
             for ascii_row in self.process_ascii_art('file'):
                     f.write(ascii_row + "\n")
     
 
     def process_ascii_art(self, destination):
-        """
-        Glue funciton takes PIL image object and calculates brightness for each pixel depending on 
-        the desired calculation. It also determines the brightness range to get better contrast. 
-        Lastly, an ascii character is determined and added to a new array,
-
-        Parameters:
-            
-
-        Returns:
-            ascii_arr, image_widt, image_height (tuple): 
-
-        Dependencies:
-            brightness_calc: This is a funciton object that is passed in at run time.
-            brightness_to_char:
-        """
+        # Glue function to take PIL Image object, calculate brightness for each pixel and map to an ascii character.
+        # The function yields it's output at every completed row which is consumed by print_to_terminal() or 
+        # print_to_file().
+        
         # Scale image for output
         if destination == 'terminal':
             # Output to terminal
             terminal_scale = self.scale_for_terminal()
-            (new_width, new_height) = (self.image.width//(self.x_scale * terminal_scale), self.image.height//(self.y_scale * terminal_scale))
+            (new_width, new_height) = (self.image.width//(self.x_calibrate * terminal_scale), self.image.height//(self.y_calibrate * terminal_scale))
             
         else:
             # Output to file (8.5 X 11 assumed)
             page_scale = self.scale_for_page()
-            (new_width, new_height) = (self.image.width//(self.x_scale * page_scale), self.image.height//(self.y_scale * page_scale))
+            (new_width, new_height) = (self.image.width//(self.x_calibrate * page_scale), self.image.height//(self.y_calibrate * page_scale))
 
         # Create resized Image instance to process. 
         scaled_image = self.image.resize((int(new_width), int(new_height)))
-
 
         # Initiate brightness calc object
         bc = Brightness(self.brightness_calc)
@@ -144,23 +134,20 @@ class AsciiArt:
                 adjusted_brightness = bc.calc(p) - min_brightness
                 ascii_char = self.brightness_to_char(adjusted_brightness, brightness_range)
                 ascii_row.append(ascii_char)
-            #ascii_arr.append(ascii_char)
-        #return ascii_arr, image.size[0], image.size[1]
+            
 
     def scale_for_terminal(self):
-        term_size = Popen('stty size', shell=True, stdout=PIPE)
-        term_height, term_width = map(lambda n: int(n.decode('utf-8')) - 1, term_size.communicate()[0].split())
+        term_size = Popen('stty size', shell=True, stdout=PIPE).communicate()
+        term_height, term_width = map(lambda n: int(n) - 1, term_size[0].decode('utf-8').split())
         
-        # Scale for terminal character size (based on x_scale and y_scale attribute)
-        img_width = self.image.width // self.x_scale
-        img_height = self.image.height // self.y_scale
+        # Scale for terminal character size (based on x_calibrate and y_calibrate attribute)
+        img_width = self.image.width // self.x_calibrate
+        img_height = self.image.height // self.y_calibrate
         
         if img_width <= term_width and img_height <= term_height:
             return 1
-        
         else:
             img_scale = img_width / img_height
-
             output_width = output_height = 0
             
             # Scale for availible terminal size. Needs to check based on width and height since both can vary
@@ -172,23 +159,22 @@ class AsciiArt:
                 output_width = img_scale * term_height
                 output_height = term_height
 
-            return img_width // output_width
+            return math.ceil(img_width / output_width)
 
 
     def scale_for_page(self):
+        # Need to determine optimal 8.5 X 11 character dimensions.
         page_width = 150
         page_height = 150
 
-        # Scale for page character size (based on x_scale and y_scale attribute)
-        img_width = self.image.width // self.x_scale
-        img_height = self.image.height // self.y_scale
+        # Scale for page character size (based on x_calibrate and y_calibrate attribute)
+        img_width = self.image.width // self.x_calibrate
+        img_height = self.image.height // self.y_calibrate
         
         if img_width <= page_width and img_height <= page_height:
-            return 1
-        
+            return 1        
         else:
             img_scale = img_width / img_height
-
             output_width = output_height = 0
             
             # Scale for availible terminal size. Needs to check based on width and height since both can vary
@@ -202,48 +188,21 @@ class AsciiArt:
 
             return img_width // output_width
 
-                
-    # --- NEEDS TESTING ---
+            
     def image_info(self):
-        """
-        Prints the PIL image object information.
+        """Prints the PIL image object information."""
 
-        Parameters:
-            image (Image obj): PIL image object of imported file.
-        """
         if self.image:
             print(f'Image size: {self.image.size[0]} x {self.image.size[1]}')
 
 
-    def brightness_to_char(self, brightness, brightness_range):
-        """
-        Determines ascii character to display based on brightness.
-
-        Modify the ascii_chars string to change the resolution. 
-
-        Parameters:
-            brightness (float): Calculated brighness values between 0 and 255.
-            brigtness_range (float): Max brightness - min brightness.
-            inverse (bool): Trigger for weather or not the image is to be inverse.
-            ascii_chars (str): String of ascii characters to use in ascii_art. 
-                NOTE: For now this is in a global variable. This will eventually be 
-                user customizable which is why the function is built this way
-
-        Returns:
-            ascii_char (str): Character from availible ascii_chars list.
-        """
-        
+    def brightness_to_char(self, brightness, brightness_range):        
         if self.inverse:
             ascii_chars = self.ascii_chars[::-1] 
         else:
             ascii_chars = self.ascii_chars
         
         return ascii_chars[round(brightness * ((len(ascii_chars)-1)/brightness_range))]
-
-
-    # Print and/or display methods
-    
-
 
 
 if __name__ == "__main__":
