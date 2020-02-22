@@ -140,54 +140,36 @@ class AsciiArt:
         term_size = Popen('stty size', shell=True, stdout=PIPE).communicate()
         term_height, term_width = map(lambda n: int(n) - 1, term_size[0].decode('utf-8').split())
         
-        # Scale for terminal character size (based on x_calibrate and y_calibrate attribute)
-        img_width = self.image.width // self.x_calibrate
-        img_height = self.image.height // self.y_calibrate
-        
-        if img_width <= term_width and img_height <= term_height:
-            return 1
-        else:
-            img_scale = img_width / img_height
-            output_width = output_height = 0
-            
-            # Scale for availible terminal size. Needs to check based on width and height since both can vary
-            if term_width / img_scale <= term_height:
-                output_width = term_width
-                output_height = term_width / img_scale
-
-            if img_scale * term_height <= term_width and term_height > output_height:
-                output_width = img_scale * term_height
-                output_height = term_height
-
-            return math.ceil(img_width / output_width)
-
+        return self.scale_image(term_width, term_height)
 
     def scale_for_page(self):
         # Need to determine optimal 8.5 X 11 character dimensions.
         page_width = 150
         page_height = 150
 
-        # Scale for page character size (based on x_calibrate and y_calibrate attribute)
+        return self.scale_image(page_width, page_height)
+
+    def scale_image(self, dest_width, dest_height):
+        # Scale for terminal character size (based on x_calibrate and y_calibrate attribute)
         img_width = self.image.width // self.x_calibrate
         img_height = self.image.height // self.y_calibrate
         
-        if img_width <= page_width and img_height <= page_height:
-            return 1        
+        if img_width <= dest_width and img_height <= dest_height:
+            return 1
         else:
             img_scale = img_width / img_height
             output_width = output_height = 0
             
             # Scale for availible terminal size. Needs to check based on width and height since both can vary
-            if page_width / img_scale <= page_height:
-                output_width = page_width
-                output_height = page_width / img_scale
+            if dest_width / img_scale <= dest_height:
+                output_width = dest_width
+                output_height = dest_width / img_scale
 
-            if img_scale * page_height <= page_width and page_height > output_height:
-                output_width = img_scale * page_height
-                output_height = page_height
+            if img_scale * dest_height <= dest_width and dest_height > output_height:
+                output_width = img_scale * dest_height
+                output_height = dest_height
 
-            return img_width // output_width
-
+            return math.ceil(img_width / output_width)
             
     def image_info(self):
         """Prints the PIL image object information."""
