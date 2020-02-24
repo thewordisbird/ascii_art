@@ -11,7 +11,7 @@ setuptools.setup(
     description="Convert .jpg's or .png's to ascii art.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/JustinHBird/microblog",
+    url="https://github.com/JustinHBird/ascii_art",
     packages=setuptools.find_packages(where='ascii_art'),
     package_dir={'': 'ascii_art'},
     classifiers=[
