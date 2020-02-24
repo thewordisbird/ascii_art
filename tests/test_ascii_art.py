@@ -5,7 +5,9 @@ import ascii_art
 from ascii_art import Brightness, AsciiArt
 
 @pytest.fixture(scope='function')
-def test_image():
+def test_image_path():
+    """Test image pixel array for testing basic image functions."""
+    # Setup: Create PIL Image object from pixel array
     test_pixel_matrix = [
                             [(254, 0, 0), (254, 0, 0), (254, 0, 0), (254, 0, 0), (254, 0, 0), (254, 0, 0), (0, 254, 0), (0, 254, 0), (0, 254, 0), (0, 254, 0), (0, 254, 0), (0, 254, 0), (0, 0, 254), (0, 0, 254), (0, 0, 254), (0, 0, 254), (0, 0, 254), (0, 0, 254)],
                             [(254, 0, 0), (254, 0, 0), (254, 0, 0), (254, 0, 0), (254, 0, 0), (254, 0, 0), (0, 254, 0), (0, 254, 0), (0, 254, 0), (0, 254, 0), (0, 254, 0), (0, 254, 0), (0, 0, 254), (0, 0, 254), (0, 0, 254), (0, 0, 254), (0, 0, 254), (0, 0, 254)],
@@ -54,47 +56,44 @@ def test_image():
         for col in range(im_width):
             px[col, row] = test_pixel_matrix[row][col]
     
-    # save test image in test file while testing
+    # Save test image in test file while testing
     test_image_path = os.path.join(os.path.dirname(os.path.join(os.path.abspath(__file__))), 'test_img.png')
     print(test_image_path)
     im.save(test_image_path)
     yield test_image_path
 
-    # Delete image file
+    # Teardown : Delete image file
     os.remove(test_image_path)
 
 
-def test_construct_AsciiArt_class(test_image):
-    a = AsciiArt(test_image)
-    assert a.image.width == 18
-    assert a.image.height == 36
+def test_construct_AsciiArt_class(test_image_path):
+    # GIVEN a path to an image
+    # WHEN the AsciiArt class is instantiated with the image path as an argument
+    # THEN an AsciiArt object will be created
+    a = AsciiArt(test_image_path)
+    assert type(a).__name__ is 'AsciiArt'
 
 
-@pytest.mark.parametrize('test_term_size, scale',
+@pytest.mark.parametrize('dest_width, dest_height, scale',
                         [
-                            ((b'500 200\n', None), 1),
-                            ((b'10 30\n', None), 2),
-                            ((b'30 6\n', None), 4),
+                            (500, 200, 1),
+                            (10, 30, 2),
+                            (30, 6, 3)
                         ])
-def test_scale_for_terminal(test_image, monkeypatch, test_term_size, scale):
-    a = AsciiArt(test_image)
-    def mock_terminal_size(*arg, **kwargs):
-        return test_term_size
-
-    # monkeypatch terminal size
-    monkeypatch.setattr(ascii_art.Popen, 'communicate', mock_terminal_size)
-    assert a.scale_for_terminal() == scale
-
-def test_scale_for_page(test_image):
-    pass
+def test_scale_image(test_image_path, dest_width, dest_height, scale):
+    # GIVEN a dest_width and dest_height
+    # WHEN the scale_image method is called
+    # THEN the scale factor will be returned to fit the image on the destination medium
+    a = AsciiArt(test_image_path)
+    assert a.scale_image(dest_width, dest_height) == scale
 
 
-def test_image_info(test_image, capsys):
+def test_image_info(test_image_path, capsys):
     # GIVEN a PIL Image object
-    # WHEN the image_info function is called on the PIL Image object.
+    # WHEN the image_info method is called on the PIL Image object.
     # THEN the width and height of the image will be printed
-    img = Image.open(test_image)
-    a = AsciiArt(test_image)
+    img = Image.open(test_image_path)
+    a = AsciiArt(test_image_path)
     a.image_info()
     captured = capsys.readouterr()
     assert captured.out == f'Image size: {img.size[0]} x {img.size[1]}\n'
@@ -111,8 +110,12 @@ def test_image_info(test_image, capsys):
                             (255, 255, False, '5'),
                             (255, 255, True, '0'),
                         ])
-def test_brightness_to_char(test_image, brightness, brightness_range, inverse, char):
-    a = AsciiArt(test_image)
+def test_brightness_to_char(test_image_path, brightness, brightness_range, inverse, char):
+    # GIVEN a brightness and a brightness_range
+    # WHEN the brightness_to_char method is called
+    # THEN a ascii_char will be returned as maped by the function according to it's 
+    #   relative brightness in the brightness in the range
+    a = AsciiArt(test_image_path)
     a.ascii_chars = '012345'
     a.inverse = inverse
     assert a.brightness_to_char(brightness, brightness_range) == char
@@ -131,7 +134,7 @@ def test_brightness_calc(mode, pixel, result):
     # GIVEN a brightness calculation
     # WHEN the brightness object is passed a pixel tuple
     # THEN the calc method of the brightness class will calculate
-    # the brightness based on the set calculation mode attribute
+    #   the brightness based on the set calculation mode attribute
     bc = Brightness(mode)
     assert bc.calc(pixel) == result
 
