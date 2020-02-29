@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="ascii-art", 
+    name="ascii-art-thew0rdisbird", 
     version="0.0.1",
     author="Justin Bird",
     author_email="justin.h.bird@gmail.com",
@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/JustinHBird/ascii_art",
     packages=setuptools.find_packages(where='ascii_art'),
-    package_dir={'': 'ascii_art'},
+    #package_dir={'': 'ascii_art'},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
