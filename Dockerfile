@@ -10,8 +10,8 @@ RUN apt-get -yqq update
 COPY . .
 
 # Install the app requirements and the app as an editable package (This is for testing only)
-RUN pip install -r requirements.txt 
-RUN pip install -e .
+RUN pip --no-cache-dir install -r requirements.txt 
+RUN pip --no-cache-dir install -e .
 
 CMD python ascii_art/ascii_art.py
 

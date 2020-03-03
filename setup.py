@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="ascii-art-thew0rdisbird", 
-    version="0.0.3",
+    version="0.0.4",
     author="Justin Bird",
     author_email="justin.h.bird@gmail.com",
     description="Convert .jpg's or .png's to ascii art.",
