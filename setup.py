@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="ascii-art-thew0rdisbird", 
-    version="0.0.1",
+    version="0.0.2",
     author="Justin Bird",
     author_email="justin.h.bird@gmail.com",
     description="Convert .jpg's or .png's to ascii art.",
@@ -20,7 +20,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
-    install_requires=[
-        'Pillow'
-    ]
+    #install_requires=['Pillow']
 )
